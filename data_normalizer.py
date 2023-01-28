@@ -1,9 +1,10 @@
 import time
 import re
 import contractions
+import random
 
 def removePageNumberTitle(data):
-    page = 'Page \| [0-9]+[ \n]+'
+    page = 'Page \| [0-9]+[ \n]*'
     author = 'J.K. Rowling'
     titles = ['<personname> and the philosophers stone',
         '<personname> and the goblet of fire',
@@ -13,9 +14,10 @@ def removePageNumberTitle(data):
         '<personname> and the half Blood prince',
         '<personname> and the deathly hallows']
     for t in titles:
-        ex = 'page ?\| ?[0-9]+ ?'+t.lower()+' ?- ?j\.k\. rowling'
-        print()
+        ex = '(page|p a g e) ?\| ?[0-9]+ ?'+t.lower()+' ?- ?j\.k\. rowling'
         data = re.sub(ex,' ', data)
+        ex = 'page ?\| ?[0-9]+'+t.lower()+' ?- ?j\.k\. rowling'
+        data = re.sub(ex, ' ', data)
     data = re.sub('  +', ' ', data)
     return data
 
@@ -26,8 +28,6 @@ def format(input_path, output_path):
     data = re.sub('  +',' ', data)
 # def parseMrMrs():#2
 #     global data
-    data = re.sub('Mr. ', 'Mr ',data)
-    data = re.sub('Mrs. ', 'Mrs ',data)
 
 # def replaceName():#3
 #     global data
@@ -41,17 +41,33 @@ def format(input_path, output_path):
         |Fred Weasley|George Weasley|Ginny Weasley|Molly Weasley|Percy Weasley|Ron Weasley|Dobby|Fluffy|Hedwig|Moaning Myrtle|Aragog|Grawp|Barty\
         |[yY]ou\- ?\n?[kK]now\- ?\n?[wW]ho|He\- ?\n?Who\- ?\n?Must\- ?\n?Not\- ?\n?Be\- ?\n?Named'
     data = re.sub(full_names,'<personname>', data)
+    data = re.sub(full_names.upper(), '<personname>', data)
     half_names ='Regulus|Arcturus|Black|Sirius|Lavender|Brown|Cho|Chang|Vincent|Crabbe|Bartemius|Crouch|Fleur|Delacour|Cedric|Diggory|Alberforth\
         |Dumbledore|Albus|Dudley|Dursley|Petunia|Vernon|Argus|Filch|Seamus|Finnigan|Nicolas|Flamel|Cornelius|Fudge|Goyle|Gregory|Hermione|Granger\
         |Rubeus|Hagrid|Igor|Karkaroff|Viktor|Krum|Bellatrix|Lestrange|Alice|Longbottom|Frank|Neville|Luna|Lovegood|Xenophilius|Remus|Lupin|Draco\
         |Malfoy|Lucius|Narcissa|Olympe|Maxime|Minerva|McGonagall|Alastor|Mad-Eye|Moody|Peter|Pettigrew|Harry|Potter|James|Lily|Quirinus|Quirrell\
         |Tom|Riddle|Mary|Lord|Voldemort|Rita|Skeeter|Severus|Snape|Nymphadora|Tonks|Dolores|Janes|Umbridge|Arthur|Weasley|Bill|Charlie|Fred|George\
-        |Ginny|Molly|Percy|Ron|Dobby|Fluffy|Hedwig|Moaning|Myrtle|Aragog|Grawp|Barty'
+        |Ginny|Molly|Percy|Ron|Dobby|Fluffy|Hedwig|Moaning|Myrtle|Aragog|Grawp|Barty|Yaxley'
     
     data = re.sub(half_names, '<personname>',data)
+    data = re.sub(half_names.upper(), '<personname>', data)
 
     data = data.lower()
     data = removePageNumberTitle(data)
+    data = re.sub('mr. ', 'mr ',data)
+    data = re.sub('mrs. ', 'mrs ',data)
+    data = re.sub('r\.a\.b\.','rab', data)
+    data = re.sub('s\.p\.e\.w\.','spew', data)
+    data = re.sub('o\.w\.l\.','owl', data)
+    data = re.sub('n\.e\.w\.t\.','newt', data)
+    data = re.sub('d\.a\.','da', data)
+    data = re.sub(' e\.',' e', data)
+    data = re.sub('s\-p\-e\-w','spew', data)
+    data = re.sub('d\. j\.',' ',data)
+    data = re.sub('r\. j\.', ' ', data)
+    data = re.sub('a\. m\.', 'am', data)
+    data = re.sub('s\.p\.t\.', 'spt', data)
+    data = re.sub('a\.p\.w\.b\.d\.', 'apwbd', data)
     # fc = open('texp.txt', 'w+',encoding='utf8')
     # fc.write(data)
     # fc.close()
@@ -62,10 +78,10 @@ def format(input_path, output_path):
     for word in List:
         res.append(contractions.fix(word))
     data = ' '.join(res)
-    data = re.sub("'s", " <s>", data)#after removal Harry's -> Harry <s>
+    #data = re.sub("'s", " <s>", data)#after removal Harry's -> Harry <s>
 
 
-    data = re.sub('''!|"|#|$|%|&|'|\(|\)|\*|\+|— |/|:|;|=|@|\[|\]|^|_|`|\{|\||\}|~|”|“|\.\.\.|\. \. \.|’|,''','',data)
+    data = re.sub('''!|"|#|$|%|&|'|\(|\)|\*|\+|— |/|:|;|=|@|\[|\]|^|_|`|\{|\||\}|~|”|“|\.\.\.|\. \. \.|’|,|‘''','',data)
     data = re.sub('- |—',' ',data)
     data = data.replace('\\', '')
     
@@ -76,7 +92,7 @@ def format(input_path, output_path):
     fo = open(output_path, 'w+',encoding='utf-8')
     
     for sentence in sentence_list:
-       fo.write(sentence+'\n')
+       fo.write(sentence.strip()+'\n')
     fo.close()
 
 
@@ -103,7 +119,27 @@ books = [
     'Harry_Potter_Text/Book3.txt',
     'Harry_Potter_Text/Book4.txt',
     'Harry_Potter_Text/Book5.txt',
+    'Harry_Potter_Text/Book6.txt',
     'Harry_Potter_Text/Book6.txt'
 ]
 merge(books, 'book.txt')
-format('book.txt', 'parsed.txt')
+format('Book.txt', 'parsed.txt')
+
+
+def split():
+    s = open('parsed.txt')
+    l = s.readlines()
+    test = open('test.txt', 'w+')
+    dev = open('dev.txt','w+')
+    train = open('train.txt', 'w+')
+    random.seed(0)
+    for i in l:
+        r = random.random()
+        if (r>0.95):
+            test.write(i)
+        elif(r>0.85):
+            dev.write(i)
+        else:
+            train.write(i)
+    
+split()
